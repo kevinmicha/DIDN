@@ -17,8 +17,8 @@ n = length(list_origin);
 
 
 %% generate data
-for i = 3 : n-1
-    file_origin = strcat(folder_origin, '/', list_origin(i).name);
+for i = 3 : n
+    file_origin = strcat(folder_origin, '\', list_origin(i).name);
     
     origin = imread(file_origin); 
     if size(origin,3) == 3
