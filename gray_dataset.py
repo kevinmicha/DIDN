@@ -1,5 +1,3 @@
-from collections.abc import Iterable
-
 import torch.utils.data as data
 import torch
 from torch.autograd import Variable
