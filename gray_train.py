@@ -27,6 +27,7 @@ parser.add_argument("--resume", default="", type=str, help="Path to checkpoint (
 parser.add_argument("--start_epoch", default=1, type=int, help="Manual epoch number (useful on restarts)")
 parser.add_argument("--threads", type=int, default=0, help="Number of threads for data loader to use, Default: 0")
 parser.add_argument("--gpus", default="0", type=str, help="gpu ids (default: 0)")
+parser.add_argument("--exact_recon", default=False, type=bool, help="Use exact reconstruction? Default: false")
 
 def main():
     global opt, model
@@ -46,18 +47,18 @@ def main():
     cudnn.benchmark = True
 
     print("===> Loading datasets")
-    train_set = DatasetFromHdf5("./data/training_Gray_5to50_uint8_samples.h5")
+    train_set = DatasetFromHdf5("./training_Gray_no_noise.h5")
     training_data_loader = DataLoader(dataset=train_set, num_workers=opt.threads, batch_size=opt.batchSize, shuffle=True, pin_memory=True)
 
     print("===> Building model")
-    model = _NetG()
+    model = _NetG(exact_recon=opt.exact_recon)
     criterion = nn.L1Loss()
 
     print("===> Setting GPU")
     if cuda:
         model = model.cuda()
         criterion = criterion.cuda()
-    summary(model, (1, 64, 64))
+    #summary(model, (1, 64, 64)), will remove this comment soon
 
     # optionally resume from a checkpoint
     if opt.resume:
@@ -105,14 +106,15 @@ def train(training_data_loader, optimizer, model, criterion, epoch, max_psnr):
 
     for iteration, batch in enumerate(training_data_loader, 0):
         batch = gray_dataset.tensor_augmentation(batch)   # data augmentation (random rotation / flip)
-        input = Variable(batch[0]/255.).view(16, 1, batch[0].shape[1], batch[0].shape[2])
+        noisy, noise_std = gray_dataset.add_noise(batch, return_noise_level=True)
         target = Variable(batch[1]/255., requires_grad=False).view(16, 1, batch[0].shape[1], batch[0].shape[2])
 
         if opt.cuda:
-            input = input.cuda()
+            noisy = noisy.cuda()
+            noise_std = noise_std.cuda()
             target = target.cuda()
 
-        loss = criterion(model(input), target)
+        loss = criterion(model((noisy, noise_std)), target)
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
@@ -136,6 +138,10 @@ def train(training_data_loader, optimizer, model, criterion, epoch, max_psnr):
                     noisy.append(sio.loadmat(noisy_name50)['noisy']/255.)
                     noisy.append(sio.loadmat(noisy_name30)['noisy'] / 255.)
                     noisy.append(sio.loadmat(noisy_name10)['noisy'] / 255.)
+                    noise_std = []
+                    noise_std.append(50/255.)
+                    noise_std.append(30/255.)
+                    noise_std.append(20/255.)
 
                     origin = origin.astype(float)
                     psnr_noisy = output_psnr_mse(origin, noisy[0])
@@ -143,10 +149,12 @@ def train(training_data_loader, optimizer, model, criterion, epoch, max_psnr):
 
                     for n in range(3):
                         noisy[n] = Variable(torch.from_numpy(noisy[n]).float()).view(1, 1, noisy[n].shape[0], noisy[n].shape[1])
+                        noise_std[n] = Variable(torch.tensor(noise_std[n])).view(1, 1, 1, 1)
                         if opt.cuda:
                             noisy[n] = noisy[n].cuda()
+                            noise_std[n] = noise_std[n].cuda()
 
-                        out = model(noisy[n])
+                        out = model((noisy[n], noise_std[n]))
                         out = out.cpu()
                         out = out.data[0].numpy().astype(np.float32)
 
