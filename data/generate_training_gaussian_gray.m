@@ -2,8 +2,8 @@
 clear; close all; clc;
 
 %% Train Set
-folder_origin = 'Train/DIV2K_samples/original';
-savepath = 'training_Gray_5to50_uint8_samples.h5';
+folder_origin = 'BSD500/data/images/train';
+savepath = 'training_Gray_no_noise.h5';
 
 patch_size = 64;
 stride = 64;
@@ -17,8 +17,8 @@ n = length(list_origin);
 
 
 %% generate data
-for i = 3 : n
-    file_origin = strcat(folder_origin, '\', list_origin(i).name);
+for i = 3 : n-1
+    file_origin = strcat(folder_origin, '/', list_origin(i).name);
     
     origin = imread(file_origin); 
     if size(origin,3) == 3
@@ -28,7 +28,7 @@ for i = 3 : n
     
     for x = 1  : stride : hei-patch_size+1
         for y = 1  :stride : wid-patch_size+1
-            noiseSigma = randi([1, 10])*5; %5-50
+            noiseSigma = randi([1, 10])*0; %5-50
             count=count+1;
             subim_origin = origin(x : x+patch_size-1, y : y+patch_size-1);
             subim_noisy = uint8(single(subim_origin) + noiseSigma*randn(size(subim_origin)));
