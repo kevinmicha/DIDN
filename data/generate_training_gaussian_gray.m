@@ -28,10 +28,9 @@ for i = 3 : n
     
     for x = 1  : stride : hei-patch_size+1
         for y = 1  :stride : wid-patch_size+1
-            noiseSigma = randi([1, 10])*0; %5-50
             count=count+1;
             subim_origin = origin(x : x+patch_size-1, y : y+patch_size-1);
-            subim_noisy = uint8(single(subim_origin) + noiseSigma*randn(size(subim_origin)));
+            subim_noisy = uint8(single(subim_origin));
             
             label(:, :, count) = subim_origin;
             data(:, :, count) = subim_noisy;
