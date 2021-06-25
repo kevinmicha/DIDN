@@ -1,5 +1,8 @@
+from collections.abc import Iterable
+
 import torch.utils.data as data
 import torch
+from torch.autograd import Variable
 import h5py
 import numpy as np
 
@@ -53,3 +56,24 @@ def tensor_augmentation(batch):  # Input, Output: (2,16,64,64) size tensor
     batch_return.append(target_result)
 
     return batch_return
+
+def add_noise(batch, return_noise_level):
+    data = (batch[0]/255).float() # normalisation
+    noise_std_range = (0, 55)
+    noise = np.zeros((np.shape(data)))
+    noise_std = np.random.uniform(
+        low=noise_std_range[0],
+        high=noise_std_range[1],
+        size=np.shape(data)[0],
+    )
+    for i in range(np.shape(noise)[0]):
+        noise[i,:,:] = np.random.normal(size=np.shape(data[i,:,:]), loc=0.0, scale=noise_std[i]/255)
+    noise = torch.from_numpy(noise).float()
+    noise_std = torch.from_numpy(noise_std).float()
+
+    output = Variable(data + noise).view(16, 1, batch[0].shape[1], batch[0].shape[2])
+    noise_std = Variable(noise_std/255).view(16, 1, 1, 1)
+    if return_noise_level:
+        return output, noise_std
+    else:
+        return output
