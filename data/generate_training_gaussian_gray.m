@@ -2,7 +2,7 @@
 clear; close all; clc;
 
 %% Train Set
-folder_origin = 'BSD500/data/images/train';
+folder_origin = 'Train/DIV2K_samples/original';
 savepath = 'training_Gray_no_noise.h5';
 
 patch_size = 64;
