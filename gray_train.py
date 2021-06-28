@@ -114,7 +114,7 @@ def train(training_data_loader, optimizer, model, criterion, epoch, max_psnr):
             noise_std = noise_std.cuda()
             target = target.cuda()
 
-        loss = criterion(model((noisy, noise_std)), target)
+        loss = criterion(model(noisy, noise_std), target)
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
@@ -154,7 +154,7 @@ def train(training_data_loader, optimizer, model, criterion, epoch, max_psnr):
                             noisy[n] = noisy[n].cuda()
                             noise_std[n] = noise_std[n].cuda()
 
-                        out = model((noisy[n], noise_std[n]))
+                        out = model(noisy[n], noise_std[n])
                         out = out.cpu()
                         out = out.data[0].numpy().astype(np.float32)
 
