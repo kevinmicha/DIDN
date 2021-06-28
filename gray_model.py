@@ -179,10 +179,10 @@ class _NetG(nn.Module):
 
 
 
-    def forward(self, x):
-        residual = x[0]
-        noise_std = x[1]
-        out = self.relu1(self.conv_input(x[0]))
+    def forward(self, x, y):
+        residual = x
+        noise_std = y
+        out = self.relu1(self.conv_input(x))
         out = self.relu2(self.conv_down(out))
 
         out1 = self.recursive_A(out)
