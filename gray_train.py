@@ -58,7 +58,7 @@ def main():
     if cuda:
         model = model.cuda()
         criterion = criterion.cuda()
-    #summary(model, (1, 64, 64)), will remove this comment soon
+    summary(model, [(1, 64, 64), (1, 1, 1)])
 
     # optionally resume from a checkpoint
     if opt.resume:
