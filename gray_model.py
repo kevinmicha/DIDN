@@ -208,9 +208,11 @@ class _NetG(nn.Module):
 
         out= self.subpixel(out)
         out = self.conv_output(out)
-        out = torch.add(out, residual)
         noise_std = torch.reshape(noise_std, (residual.size()[0], 1, 1, 1))
         if self.exact_recon:
             out = residual - noise_std * out
+        else:
+            out = torch.add(out, residual)
+        
 
         return out
