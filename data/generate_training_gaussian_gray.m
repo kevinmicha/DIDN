@@ -3,7 +3,7 @@ clear; close all; clc;
 
 %% Train Set
 folder_origin = 'Train/DIV2K_samples/original';
-savepath = 'training_Gray_5to50_uint8_samples.h5';
+savepath = 'training_Gray_no_noise.h5';
 
 patch_size = 64;
 stride = 64;
@@ -28,10 +28,9 @@ for i = 3 : n
     
     for x = 1  : stride : hei-patch_size+1
         for y = 1  :stride : wid-patch_size+1
-            noiseSigma = randi([1, 10])*5; %5-50
             count=count+1;
             subim_origin = origin(x : x+patch_size-1, y : y+patch_size-1);
-            subim_noisy = uint8(single(subim_origin) + noiseSigma*randn(size(subim_origin)));
+            subim_noisy = uint8(single(subim_origin));
             
             label(:, :, count) = subim_origin;
             data(:, :, count) = subim_noisy;

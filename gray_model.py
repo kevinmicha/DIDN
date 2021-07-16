@@ -150,9 +150,9 @@ class Recon_Block(nn.Module):
 
 
 class _NetG(nn.Module):
-    def __init__(self):
+    def __init__(self, exact_recon=False):
         super(_NetG, self).__init__()
-
+        self.exact_recon = exact_recon
         self.conv_input = nn.Conv2d(in_channels=1, out_channels=256, kernel_size=3, stride=1, padding=1, bias=False)
         self.relu1 = nn.PReLU()
         self.conv_down = nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=2, padding=1, bias=False)
@@ -179,8 +179,9 @@ class _NetG(nn.Module):
 
 
 
-    def forward(self, x):
+    def forward(self, x, y):
         residual = x
+        noise_std = y
         out = self.relu1(self.conv_input(x))
         out = self.relu2(self.conv_down(out))
 
@@ -205,8 +206,13 @@ class _NetG(nn.Module):
         out = self.relu4(self.conv_mid2(out))
         out = torch.add(out, residual2)
 
-        out= self.subpixel(out)
+        out = self.subpixel(out)
         out = self.conv_output(out)
-        out = torch.add(out, residual)
+        noise_std = torch.reshape(noise_std, (residual.size()[0], 1, 1, 1))
+        if self.exact_recon:
+            out = residual - noise_std * out
+        else:
+            out = torch.add(out, residual)
+        
 
         return out
