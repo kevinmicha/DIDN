@@ -211,6 +211,6 @@ class _NetG(nn.Module):
         out = torch.add(out, residual)
         noise_std = torch.reshape(noise_std, (residual.size()[0], 1, 1, 1))
         if self.exact_recon:
-            out = torch.subtract(residual, noise_std * out)
+            out = residual - noise_std * out
 
         return out
