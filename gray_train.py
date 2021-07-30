@@ -141,7 +141,7 @@ def train(training_data_loader, optimizer, model, criterion, epoch, max_psnr):
                     noise_std = []
                     noise_std.append(50/255.)
                     noise_std.append(30/255.)
-                    noise_std.append(20/255.)
+                    noise_std.append(10/255.)
 
                     origin = origin.astype(float)
                     psnr_noisy = output_psnr_mse(origin, noisy[0])
